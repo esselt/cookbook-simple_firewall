@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# iptables rules
+#
+# This file is managed by Chef, therefore
+#+ you should not manually overwrite it as
+#+ will only be overwritten.
+
+#
+# STATIC RULES
+#
+
+# Flush IPv4
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables --flush
+iptables -t nat --flush
+
+# Flush IPv6
+ip6tables -P INPUT ACCEPT
+ip6tables -P OUTPUT ACCEPT
+ip6tables -P FORWARD ACCEPT
+ip6tables --flush

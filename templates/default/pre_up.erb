@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# iptables rules
+#
+# This file is managed by Chef, therefore
+#+ you should not manually overwrite it as
+#+ will only be overwritten.
+
+#
+# STATIC RULES
+#
+
+# Flush all
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables --flush
+iptables -t nat --flush
+
+# Default IPv4 policy
+#: INPUT: DROP, OUTPUT: ACCEPT, FORWARD: DROP
+iptables -P INPUT DROP
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD DROP
+
+# Default IPv6 policy
+#: INPUT: DROP, OUTPUT: ACCEPT, FORWARD: DROP
+ip6tables -P INPUT DROP
+ip6tables -P OUTPUT ACCEPT
+ip6tables -P FORWARD DROP
+
+# Loopback is always allowed
+iptables -A INPUT -i lo -j ACCEPT
+
+# Localhost is always allowed
+#: IPv6
+ip6tables -A INPUT -s ::1 -j ACCEPT
+ip6tables -A OUTPUT -d ::1 -j ACCEPT
+#: IPv4
+iptables -A INPUT -s 127.0.0.0/8 -j ACCEPT
+
+# Allow already established sessions
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+#
+# DYNAMIC RULES
+#
+
+<% @rules.each do |priority, rule| %>
+# Priority: <%= priority %>
+# Name: <%= rule['name'] %>
+<% if rule['rule'] %>iptables <%= rule['rule'] %><% end %>
+<% if rule['rule6'] %>ip6tables <%= rule['rule6'] %><% end %>
+
+<% end %>
+#
+# LOGGING
+#
+
+# Log up to 3 instances of the same packet dropped per minute
+iptables -A INPUT -m limit --limit 3/min --limit-burst 3 -j LOG --log-prefix "[IPTABLES] input denied: " --log-level 7
