@@ -16,6 +16,11 @@ iptables -P OUTPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables --flush
 iptables -t nat --flush
+ip6tables -P INPUT ACCEPT
+ip6tables -P OUTPUT ACCEPT
+ip6tables -P FORWARD ACCEPT
+ip6tables --flush
+ip6tables -t nat --flush
 
 # Default IPv4 policy
 #: INPUT: DROP, OUTPUT: ACCEPT, FORWARD: DROP
@@ -31,6 +36,7 @@ ip6tables -P FORWARD DROP
 
 # Loopback is always allowed
 iptables -A INPUT -i lo -j ACCEPT
+ip6tables -A INPUT -i lo -j ACCEPT
 
 # Localhost is always allowed
 #: IPv6
@@ -38,9 +44,11 @@ ip6tables -A INPUT -s ::1 -j ACCEPT
 ip6tables -A OUTPUT -d ::1 -j ACCEPT
 #: IPv4
 iptables -A INPUT -s 127.0.0.0/8 -j ACCEPT
+iptables -A OUTPUT -d 127.0.0.0/8 -j ACCEPT
 
 # Allow already established sessions
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 #
 # DYNAMIC RULES
@@ -59,3 +67,4 @@ iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 # Log up to 3 instances of the same packet dropped per minute
 iptables -A INPUT -m limit --limit 3/min --limit-burst 3 -j LOG --log-prefix "[IPTABLES] input denied: " --log-level 7
+ip6tables -A INPUT -m limit --limit 3/min --limit-burst 3 -j LOG --log-prefix "[IP6TABLES] input denied: " --log-level 7
